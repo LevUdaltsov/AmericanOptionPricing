@@ -1,0 +1,869 @@
+\documentclass[letterpaper,12pt]{article}
+\usepackage{abstract}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{chngcntr}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage[toc, page]{appendix}
+\usepackage{authblk}
+\usepackage{bbm}
+\usepackage{caption, subcaption}
+\usepackage{chngcntr}
+\usepackage{color}
+\usepackage[colorinlistoftodos]{todonotes}
+\usepackage{courier}
+\usepackage{datetime}
+\usepackage{dsfont}
+\usepackage{enumerate}
+\usepackage[shortlabels]{enumitem}
+\usepackage{fancyhdr}
+\usepackage{float}
+% \usepackage[bottom]{footmisc}
+\usepackage{gensymb}
+\usepackage[top=1in, bottom=1in, left=1in, right=1in]{geometry}
+\usepackage{graphicx}
+\usepackage[space]{grffile}
+\usepackage{hyperref}
+\usepackage[utf8]{inputenc}
+\usepackage{makecell}
+\usepackage{mathtools}
+\usepackage{microtype} 
+\usepackage{minted}
+\usepackage{mleftright}
+% \usepackage[square,sort,comma,numbers]{natbib}
+\usepackage{newtxmath}
+\usepackage{newtxtext}
+\usepackage{pgfplots}
+\usepackage{relsize}
+\usepackage{setspace}
+\usepackage{subcaption}
+\usepackage{subfig}
+\usepackage{titlesec}
+\usepackage{url}
+\usepackage{xfrac}
+
+\counterwithout{equation}{section} % undo numbering system provided by phstyle.cls
+ % implement desired numbering system
+
+\usepackage{tikz}
+\usepackage{xspace}
+
+\theoremstyle{plain}
+\tikzstyle{end} = []
+
+
+\allowdisplaybreaks
+
+\renewcommand{\abstractnamefont}{\normalfont\bfseries}
+\renewcommand{\abstracttextfont}{\normalfont\small\itshape}
+
+\newdateformat{usvardate}{
+      \monthname[\THEMONTH] \ordinal{DAY}, \THEYEAR}
+\newcommand{\MATLAB}{\textsc{Matlab}\xspace}
+\fancyheadoffset{0cm}
+\setlength{\headheight}{10pt} 
+
+\providecommand{\keywords}[1]{\textbf{\textit{Keywords---}} #1}
+\newcommand\wordcount{%
+  \immediate\write18{texcount -utf8 -merge -sum -incbib -dir -sub=none -brief \jobname.tex | cut -d : -f 1 > 'count.txt'}%
+  \input{count.txt}\ignorespaces words%
+}
+\numberwithin{equation}{section}
+\counterwithout{equation}{section}
+\begin{document}
+\begin{titlepage}
+\newcommand{\HRule}{\rule{\linewidth}{0.5mm}} % Defines a new command for the horizontal lines, change thickness here
+
+  \center % Center everything on the page
+
+
+%    HEADING SECTION
+
+  %\textsc{\LARGE University Name}\\[1.5cm] % Name of your university/college
+  \textsc{\Large Financial Mathematics Research Project Report}\\[0.5cm] % Major heading such as course name
+  \textsc{\large Lev Udaltsov}\\[0.5cm] % Minor heading such as course title
+  \textsc{\large 115368956}\\[0.5cm] % Minor heading such as course title
+  \textsc{\large Supervisor - Claus Köstler}\\[0.5cm] % Minor heading such as course title
+  \textsc{\large Coordinator - Spyridon Dendrinos}\\[0.5cm] % Minor heading such as course title
+
+%    TITLE SECTION
+
+  \vspace{1. cm}
+  \HRule \\[0.4cm]
+  { \huge \bfseries \textbf{American option pricing based on binomial tree models\\}}\\[0.4cm] % Title of your document
+  \HRule \\[1.5cm]
+ 
+%    AUTHOR SECTION
+\includegraphics[width=4cm]{8HeraldicCrest.jpg}\\[.5cm]
+
+
+%    DATE SECTION
+
+  \vspace{1. cm}
+  {\large School of Mathematical Sciences\\
+  University College Cork\\
+  Ireland\\
+  $\text{27}^{\text{th}}$ March 2019}\\[3cm] % Date, change the \today to a set date if you want to be precise
+   
+
+
+\vfill % Fill the rest of the page with whitespace
+
+\end{titlepage}
+
+%-----------------------------------------------------------------
+
+\newpage
+\tikzstyle{bag} = [text width=2em, text centered]
+\tikzstyle{end} = []
+
+\rhead{American option pricing based on binomial tree models}
+\lhead{Lev Udaltsov}
+
+\begin{abstract}
+Option pricing is a well covered area, with many approaches available. One of the best known methods for pricing of options was proposed by Cox, Ross, and Rubenstein in 1979: the binomial tree model. Their approach works well for both European options and American options, but has to be tweaked for American options, to allow for the possibility of early exercise. After reviewing the pricing of European options on binomial tree models, this project proceeds with studying the pricing of American options, and provides a method for visualising how the value of the option evolves within the model.
+\end{abstract}
+\tableofcontents
+\doublespacing
+\newpage
+
+
+\section{Introduction}
+Options are a financial instrument, similar to futures contracts, which have been officially traded since 1973. They are sold by an option writer to an option buyer. The buyer then has the right, not the obligation, to buy or sell the underlying asset at a pre-determined price at a specific date.
+
+The approach to pricing of options underwent a massive change in 1973 when Fischer Black and Myron Scholes presented the first completely satisfactory equilibrium option pricing model. These "path-breaking" articles have laid the foundation for many academic studies that followed \cite{CRR}. The Black-Scholes model, however, is extremely mathematically involved as it is derived from a partial differential equation known as the Black-Scholes equation. It is frequently used by option market participants, but as a "black box" calculator - with known inputs and outputs, with little regard for the mathematics behind the process.
+
+In their paper, Cox, Ross and Rubenstein \cite{CRR} put forward a much more intuitive and simple approach to the pricing of options. They originally got the idea from William Sharpe, who introduced the approach in his book {\em Investments} (1978) \cite{WSI}. Their approach involves breaking down the stock price movements to a discrete binomial process, and pricing the option using simple arbitrage arguments.
+
+This paper seeks to explore how the binomial method can be used to price American Options, and compares this approach to alternative option pricing methods. The existing literature is combined into a concise overview of how the method works, with different variations discussed and explained. After doing this, it is shown how the process can be represented visually through binomial trees. This visualisation is used to highlight the benefits of the model. The visualisation is implemented using Python, with code that I have developed as part of the project, using calculations and formulations proposed by D. Higham \cite{FOV}.\\
+
+\section{Notation and Assumptions}
+
+Imagine a market where two types of asset can be traded: one risk-free security, such as a bank deposit, and one risky security, such as a stock. We will denote the value of a risk-free security $A$ at time $t$ by $A(t)$. Similarly, the value of a risky security $S$ at time $t$ will be given by $S(t)$. At any given time $t$, the value of the securities, at that time, will be known. At any time $T>t$, $S(T)$ will be unknown, while the value $A(T)$ will be known, as guaranteed by the bank.
+
+Consider now a portfolio $\Pi$ that contains $x$ risky securities, and $y$ risk-free securities. The value of $\Pi$ at time $t$ can be written as
+\begin{equation}
+	\Pi(t) = xS(t) + yA(t).
+\end{equation}
+
+With this portfolio in mind, we can establish the main assumption that will be the primary driving force behind our arguments for the model used; \textbf{The No-Arbitrage Principle:} 
+\begin{assumption}
+There is no portfolio $\Pi$ with initial value $\Pi(0) = 0$ such that $\Pi(T) \geq 0$ with probability 1 and $\Pi(T) > 0$ with non-zero probability, for any time $T>0$.
+\end{assumption}
+
+In other words, if the initial value of a portfolio is zero, $\Pi(0) = 0$, and $\Pi(T) \geq 0$, then $\Pi(T) = 0$ with probability 1. It means an investor cannot obtain a risk-less profit on any portfolio that has no initial investment \cite{MFF}. There are other ways of formulating the No-Arbitrage Principle, but this is the one we will focus on as it will be used to establish relationships between stock market price fluctuations and the risk-free interest rate. It will also be used to make arguments for when it is or is not profitable to exercise an option. 
+
+The aforementioned risk-free security $A(t)$ will also have a key assumption relating to it, which is the following:
+
+\begin{assumption}
+The same constant interest rate $r$ will apply for lending and borrowing money without risk, and continuous compounding will be used.
+\end{assumption}
+
+In terms of investing in the risk-free asset, it means that a sum of money $y$ invested for a length of time $T$ will return a sum of $ye^{rT}$. This is an essential point to keep in mind as it will be used in conjunction with The No-Arbitrage principle to dictate how rational investors will act, and how they will seek out profit from their trades and transactions.
+
+
+\section{Options}
+
+\subsection{Review of Options}
+
+An {\em option} is the right, but not the obligation, to buy or sell an asset, called the {\em underlying asset} on, or before, a specified future time $T$ for price $K$, fixed in advance, known as the {\em strike price} or {\em exercise price}. There are various types of options out there, but the two most popular options are call and put options. There are various underlying securities based on which options can be written. These include stock options, index options, Forex (currency) options, and futures options, but they all operate on the same basic principle of the buyer/seller essentially making a bet on how they believe the market will be different in the future. We will focus primarily on stock options.
+
+A {\em call option} is a contract whereby the holder is given the right to {\em buy} the underlying asset at an agreed upon price in the future. An investor would purchase such an option when they believe that the price of the security is likely to rise in the future.
+
+A {\em put option} is a contract whereby the holder is given the right to {\em sell} the underlying security at an agreed upon price in the future. It can be viewed as the opposite of a call option, as an investor would purchase it when they believe that the price of the security is likely to fall in the future.
+
+Suppose that we let $C(T)$ stand for the price of a call option at time $T$, and let $P(T)$ stand for the price of a put option at time $T$. Their payoff functions are defined as;
+
+\begin{equation}
+\begin{aligned}
+	C(T) = max(S(T) - K, 0),
+\\
+	P(T) = max(K- S(T), 0).
+\end{aligned}
+\end{equation}
+
+where $S(T)$ is the value of the security at time $T$, and $K$ is the agreed upon price that the contract was written for, which is called the {\em strike price}.
+
+The payoffs in both cases are random variables dependent on $S(T)$ which is the price of the underlying asset at time $T$.
+
+
+
+
+
+
+
+\subsection{European and American options}
+The key difference between American and European options lies in when the options can be exercised. A European style option can only be exercised at the expiry date, $T$, while an American option can be exercised at any time before, or on, the expiry date, $t \leq T$. For the sake of clarity, from now on European call and put options will be referred to as $C_E$ and $P_E$ respectively, while American call and put options will be referred to as $C_A$ and $P_A$.
+
+Intuitively, we can establish the following inequalities;
+\begin{equation}
+	C_E \leq C_A, P_E \leq P_A.
+\end{equation}
+This is because for European and American options with the same strike price $K$ and the same expiry date $T$, the American option gives the holder {\em at least} the same exercise rights as the European option. For example, consider a European call option written on a certain stock, which fluctuates greatly in price. It may happen that $S(t)$ will be much greater than $K$ at a certain time before the expiry date, $t \leq T$. With an American call option on the same stock, the holder would have the ability to exercise the option at that time $t$, for price $K$, gaining a profit of $S(t) - K$. The same argument can be made for put options, when the stock price $S(t)$ goes much lower than the strike price $K$.
+
+Although intuition says that $C_E \leq C_A$, it is actually the case that $C_E = C_A$ for an American and a European call option, that doesn't pay dividends, with the same strike price K and expiry date T. Suppose that $C_E > C_A$: could an investor use this to make an arbitrage profit? The answer is yes. One could sell an American call and buy a European call, investing the difference - $C_A - C_E$ at the interest rate $r$. If the American call is exercised at time $t \leq T$, borrow a share and sell it for $K$ to settle your obligation as the writer of the option, investing the sum received $K$ at the interest rate $r$. Then, at time $T$, you can the European call you purchased to buy a share for $K$ and close your short position in that stock. Your net position at the end of the period will be
+\begin{equation*}
+	(C_A - C_E)e^{rT} + Ke^{r(T-t)}-K > 0.	
+\end{equation*}
+If American option was not exercised at all, you will end up with the European option that will also not be exercised for a profit of 
+\begin{equation*}
+ 	(C_A - C_E)e^{rT} >0.
+ \end{equation*}
+Therefore, the value of an American call and European call must be equal.
+
+
+\section{The Binomial Tree Model}
+\subsection{Intuition behind the model}
+Here is a simple example to illustrate the main argument of the model. Consider a non-dividend paying stock with current price $S(0) = 100$, and suppose that at the end of a period of time $T=1$ its price must either be $S(1) = 50$ or $S(1) = 200$, with equal probability. A call option on this stock is available with an exercise price of $K = 100$, expiring at the end of the period. The risk free interest rate is $5\%$. In this scenario, we can use the No-Arbitrage Principle to deduce the price of this call option; $C(0) = C$. Consider the following hedging strategy:
+\begin{itemize}
+	\item Write (sell) 3 calls worth $C$ each.
+	\item Buy 2 shares worth $100$ each.
+	\item Borrow $95.12$ at $5\%$ compound interest to be paid back at the end of the period.
+\end{itemize}
+From the following table we can see the different outcomes for this transaction
+
+\begin{table}[ht]
+\caption{Outcomes of hedged transaction when selling calls} % title of Table
+\centering % used for centering table
+\begin{tabular}{c c c c} % centered columns (4 columns)
+\hline\hline %inserts double horizontal lines
+ &  & Price goes down & Price goes up\\ 
+ & Present date & S(1) = $50$ & S(1) = $200$ \\ [0.5ex] % inserts table
+%heading
+\hline % inserts single horizontal line
+Write 3 calls & 3C & 0 & $-300$ \\ % inserting body of the table
+Buy 2 shares & $-200$ & $100$ & $400$ \\
+Borrow &  $95.12$ & $-100$ & $-100$ \\
+Total & 0 & 0 & 0 \\ [1ex] % [1ex] adds vertical space
+\hline %inserts single line
+\end{tabular}
+\label{table:nonlin} % is used to refer this table in the text
+\end{table}
+
+If there is no arbitrage to be made, the price of the call must satisfy the equation $3C - 200 + 95.12 = 0$. Therefore, the current value of the call, $C(0)$, is $C = 34.96$. If the price of the call was greater than this figure, the writer of the call would be making an instantaneous profit at the present date, while his future net expenditure equaling 0 with a probability of 1. This violates the No-Arbitrage Principle. 
+
+Consider now the opposite hedging strategy:
+\begin{itemize}
+	\item Buy 3 calls worth $C$ each.
+	\item Sell 2 shares short worth $100$ each.
+	\item Invest $95.12$ at $5\%$ compound interest to be paid back at the end of the period.
+\end{itemize}
+
+\begin{table}[ht]
+\caption{Outcomes of hedged transaction when buying calls} % title of Table
+\centering % used for centering table
+\begin{tabular}{c c c c} % centered columns (4 columns)
+\hline\hline %inserts double horizontal lines
+ &  & Price goes down & Price goes up\\ 
+ & Present date & S(1) = $50$ & S(1) = $200$ \\ [0.5ex] % inserts table
+%heading
+\hline % inserts single horizontal line
+Buy 3 calls & -3C & 0 & $300$ \\ % inserting body of the table
+Sell 2 shares & $200$ & $-100$ & $-400$ \\
+Invest &  $-95.12$ & $100$ & $100$ \\
+Total & 0 & 0 & 0 \\ [1ex] % [1ex] adds vertical space
+\hline %inserts single line
+\end{tabular}
+\label{table:nonlin} % is used to refer this table in the text
+\end{table}
+
+From this table we can see that if the price of the call option was less than $34.96$, the person using the hedging strategy will, again, making an instantaneous profit at the present time, without the risk of losing any money on the transaction. Hence, the price of the call option must be equal to $34.96$, like in the previous scenario.
+
+This simple example illustrates how an appropriately levered position in stock will replicate the future returns of a call. In other words, if we purchase/sell shares and borrow/invest money in a certain way, we can effectively duplicate a pure position in calls \cite{CRR}. Note that the only information we needed to compute the exact price of the call was the risk-free interest rate $r$, the strike price $K$, the underlying stock price $S(0)$, and the range of upwards and downwards movement in the stock price. We did {\em not} need to know the probability of upward or downward movement, which is important to note. This means that regardless of your view of how the stock price will move, the value of the call option will remain the same.
+
+
+\subsection{1-Step Model}
+
+
+To derive the framework of the fully fledged binomial model, we will first begin by looking at a 1-Step tree. In this setup, we first assume that the price follows a binomial process over discrete time periods. We will say that the stock will either grow over this single time-step by a factor $u$, with probability $q$, or decrease by a factor $d$, with probability $1-q$. We also require that $d < e^r < u$, where $r$ is the assumed continuously compounding risk free rate. If this inequality didn't hold, there would be an opportunity for arbitrage \cite{MFF}. 
+
+If we were to draw the previous example as a 1-Step binomial tree, it would look like this:
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[sloped]
+   \node (a) at ( 0,0) [bag] {$S(0)$};
+   \node (b) at ( 4,-1.5) [bag] {\textit{$dS(0)$}};
+   \node (c) at ( 4,1.5) [bag] {\textit{$uS(0)$}};
+   %\node (d) at ( 8,-3) [bag] {D};
+   %\node (e) at ( 8,0) [bag] {E};
+   %\node (f) at ( 8,3) [bag] {F};
+   \draw [->] (a) to node [below] {$(1-q)$} (b);
+   \draw [->] (a) to node [above] {$q$} (c);
+   %\draw [->] (c) to node [below] {$P^2$} (f);
+   %\draw [->] (c) to node [above] {$(1-p)p$} (e);
+   %\draw [->] (b) to node [below] {$(1-p)p$} (e);
+   %\draw [->] (b) to node [above] {$(1-p)^2$} (d);
+\end{tikzpicture}
+
+\end{figure}
+
+
+We can use a similar diagram to look at the value of the call option going from one time-step to the next. Let $C$ be the current value of the call option, let $C_u$ be the value of the call if the stock price goes up to $uS(0)$ and let $C_d$ be the value of the call if the stock price drops to $dS(0)$. Using the payoff functions defined in (2) we can draw a diagram representing the value of the call option. 
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[sloped]
+
+   \node (a) at ( 0,0) [bag] {$C$};
+   \node (b) at ( 4,-1.5) [end, label=right:
+                    \textit{$C_d = max(dS(0)-K,0)$}]{};
+   \node (c) at ( 4,1.5) [end, label=right:
+                    \textit{$C_u = max(uS(0)-K,0)$}]{};
+   %\node (d) at ( 8,-3) [bag] {D};
+   %\node (e) at ( 8,0) [bag] {E};
+   %\node (f) at ( 8,3) [bag] {F};
+   \draw [->] (a) to node [below] {$(1-q)$} (b);
+   \draw [->] (a) to node [above] {$q$} (c);
+   %\draw [->] (c) to node [below] {$P^2$} (f);
+   %\draw [->] (c) to node [above] {$(1-p)p$} (e);
+   %\draw [->] (b) to node [below] {$(1-p)p$} (e);
+   %\draw [->] (b) to node [above] {$(1-p)^2$} (d);
+\end{tikzpicture}
+\end{figure}
+If we were to construct a portfolio containing $x$ shares of stock and $y$ dollars invested in a risk-free asset, this would cost us $xS(0) + y$ at time $t = 0$. At the end of the same 1-Step time period, the possible values of this portfolio would be
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[sloped]
+   \node (a) at ( 0,0) [end, label=left:
+                    \textit{$xS(0) + yA(0)$}]{};
+   \node (b) at ( 4,-1.5) [end, label=right:
+                    \textit{$x d S(0) + e^r y$}]{};
+   \node (c) at ( 4,1.5) [end, label=right:
+                    \textit{$x u S(0) + e^r y$}]{};
+   %\node (d) at ( 8,-3) [bag] {D};
+   %\node (e) at ( 8,0) [bag] {E};
+   %\node (f) at ( 8,3) [bag] {F};
+   \draw [->] (a) to node [below] {$(1-q)$} (b);
+   \draw [->] (a) to node [above] {$q$} (c);
+   %\draw [->] (c) to node [below] {$P^2$} (f);
+   %\draw [->] (c) to node [above] {$(1-p)p$} (e);
+   %\draw [->] (b) to node [below] {$(1-p)p$} (e);
+   %\draw [->] (b) to node [above] {$(1-p)^2$} (d);
+\end{tikzpicture}
+\end{figure}
+Since the choice of $x$ and $y$ in this portfolio is completely up to us, we can pick these amounts so that the value of the portfolio at the end of the time-step is equal to the value of the call option at that same time. This gives us the following equalities:
+
+
+\begin{equation*}
+\begin{aligned}
+	x u S(0) + e^r y  = C_u \\
+x d S(0) + e^r y = C_d
+\end{aligned}
+\end{equation*}
+
+Assuming $S(0), u, d, C_u, C_d$ and $r$ to be constant, and solving these equations for $x$ and $y$ we find
+
+
+\begin{equation}
+\begin{aligned}
+	x = \frac{C_u - C_d}{(u-d)S(0)} \\
+	y = \frac{uC_d - dC_u}{(u-d)e^r}
+\end{aligned}
+\end{equation}
+
+If $x$ and $y$ are chosen this way, we call the resulting portfolio a "hedging portfolio". By using the No-Arbitrage Principle again, it can be shown that the current value of the call, $C$, cannot be less than or greater than the hedging portfolio, i.e $C = xS(0) + y$ \cite{CRR}. Subbing the previously derived values for $x$ and $y$ into this equation gives us
+\begin{equation}
+\begin{aligned}
+	C & = \frac{C_u - C_d}{(u-d)} +\frac{uC_d - dC_u}{(u-d)e^r} \\
+	& = \bigg [ \bigg(\frac{e^r-d}{u-d} \bigg)C_u + \bigg( \frac{u-e^r}{u-d} \bigg)C_d\bigg]e^{-r}.
+\end{aligned}
+\end{equation}
+
+This quality holds true if this value is greater than $S-K$. However, if this value is less than $S-K$, then the value of the call option is $C = S-K$. This is important to note, as this difference will be taken into account when pricing the value of the American options later on. If the option were a European option, the equation in (5) would always hold as there is no early exercise allowed. Equation (5) can also be simplified by setting
+\begin{equation*}
+	p := \frac{e^r - d}{u-d} \space \text{ and } 1-p := \frac{u-e^r}{u-d},
+\end{equation*}
+giving us
+
+\begin{equation}
+	C = [pC_u + (1-p)C_d]e^{-r},
+\end{equation}
+which is the exact formula for a call option one period prior to expiration, given in terms of $S, K, u, d$ and $r$. This formula has several notable features. Firstly, it doesn't rely on the probability q of the stock price rising/falling, as it doesn't appear in the formula. This means that if two different investors disagreed on how they believed the stock would move, they could agree on the current price $C$ when calculated in this way. Secondly, it doesn't depend on an investors attitude towards risk. They could be risk-averse or risk-seeking, but the only assumption we made is that they would prefer more wealth over less wealth. Thirdly, the only random variable that the formula depends on is the stock price itself. It is not, theoretically, affected by how the rest of the market moves. If another pricing formula involving other variables was submitted as giving a different market price for the option, one could show that this price is incorrect based on arbitrage arguments, as shown above.
+
+Finally, one of the most important features of the model is that the value $p := \frac{e^r-d}{u-d}$ can be seen as a probability, because it is always greater than zero and less than one, based on the inequality $d < e^r < u$. If an investor were risk-neutral, it is the value that $q$ would have. To see this, we can set the expected return on a unit of stock worth $S(0)$ equal to the return we would get from investing the same amount in a risk free asset.
+\begin{equation*}
+	quS(0) + (1-q)dS(0) = e^{r}S(0)
+\end{equation*}
+dividing across by $S(0)$ and solving for $q$ yields
+\begin{equation*}
+	q = \frac{e^r-d}{u-d} = p.
+\end{equation*}
+
+
+This is a notable feature, as it means the price of a call option can be interpreted as the expectation of its discounted future value in a risk-neutral world. Applying the formula to the example in 4.1, we can price the option directly without the need for awkwardly constructing a replicating portfolio and using arbitrage arguments, and it will give us the same answer
+
+\begin{equation*}
+\begin{aligned}
+	& S(0)  = 100 \\
+	& u = 2, d = 0.5 \\
+	& p = \frac{e^r-d}{u-d} = \frac{e^{0.05}-0.5}{2-0.5} = 0.3675 \\
+	& C_u = 100, C_d = 0 \\
+	& C = [0.3675\cdot100 + 0.6325\cdot0]e^{-0.05} = 34.96.
+\end{aligned}
+\end{equation*}
+
+\subsection{2-Step and n-Step model}
+The next logical step is to expand this 1-Step procedure to more steps. For a 2-Step binomial process, the stock can take three different values, and the tree will look like this-
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[sloped]
+   \node (a) at ( 0,0) [bag] {$S(0)$};
+   \node (b) at ( 4,-1.5) [bag] {$dS(0)$};
+   \node (c) at ( 4,1.5) [bag] {$uS(0)$};
+   \node (d) at ( 8,-3) [bag] {$d^2S(0)$};
+   \node (e) at ( 8,0) [bag] {$duS(0)$};
+   \node (f) at ( 8,3) [bag] {$u^2S(0)$};
+   \draw [->] (a) to node [below] {$(1-q)$} (b);
+   \draw [->] (a) to node [above] {$q$} (c);
+   \draw [->] (c) to node [above] {$q^2$} (f);
+   \draw [->] (c) to node [above] {$(1-q)q$} (e);
+   \draw [->] (b) to node [above] {$(1-q)q$} (e);
+   \draw [->] (b) to node [below] {$(1-q)^2$} (d);
+\end{tikzpicture}
+\end{figure}
+
+Doing the same for the value of the call we get the following-
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[sloped]
+   \node (a) at ( 0,0) [bag] {$C$};
+   \node (b) at ( 4,-1.5) [bag] {$C_d $};
+   \node (c) at ( 4,1.5) [bag] {$C_u$};
+   \node (d) at ( 9,-3)  {$C_{dd} = max(d^2S(0) -K,0)$};
+   \node (e) at ( 9,0)  {$C_{ud} = max(udS(0) - K,0)$};
+   \node (f) at ( 9,3) {$C_{uu} = max(u^2S(0) - K,0)$};
+   \draw [->] (a) to node [below] {$(1-q)$} (b);
+   \draw [->] (a) to node [above] {$q$} (c);
+   \draw [->] (c) to node [above] {$q^2$} (7.5,2.75);
+   \draw [->] (c) to node [above] {$(1-q)q$} (7.5,0.5);
+   \draw [->] (b) to node [above] {$(1-q)q$} (7.5,-0.5);
+   \draw [->] (b) to node [below] {$(1-q)^2$} (7.5,-2.75);
+\end{tikzpicture}
+\end{figure}
+
+
+$C_{uu}$ stands for the value of the call after two periods if the stock price moves upwards twice, and $C_{dd}$ stands for the value of the call after two periods if the stock price moves downwards twice. $C_{du}$ is the value of the call after two periods if the stock price moves upward once, and downward once. Note that $C_{du} = C_{ud}$ as it is irrelevant whether the stock price goes up and then down, or down and then up. 
+
+We can look at the last period after the two "nodes" $C_u$ and $C_d$ as 2 individual 1-Step processes, which gives us the exact same situation as before. Therefore we can say that 
+\begin{equation*}
+	C_u = [pC_{uu} + (1-p)C_{du}]e^{-r},
+\end{equation*}
+and 
+\begin{equation*}
+	C_d = [pC_{du} + (1-p)C_{dd}]e^{-r}.
+\end{equation*}
+In the exact same way as in the previous section, we can construct a portfolio of $x$ stocks and $y$ invested in a risk-free asset, and use Equation (4) again, with new values of $C_u$ and $C_d$.
+
+Substituting these values of $C_u, C_d$ into Equation (6), gives rise to the following equation for the price of a call option at time 0
+
+\begin{equation}
+\begin{aligned}
+ 	C& = [p^2 C_{uu} + 2p(1-p)C_{ud} + (1-p)^2 C_{dd}]e^{-2r}\\
+ 	& = [p^2 max(u^2S(0) - K,0) + 2p(1-p)max(duS(0) - K,0) \\
+ 	& + (1-p)^2 max(d^2S(0) - K,0)]e^{-2r}
+\end{aligned}
+\end{equation}
+
+This formula, like the one for a 1-Step process, depends on $S, K, u, d,$ and $r$, but is also affected by the number of time-steps taken; $n$. In the example above, $n=2$, but we can extend this approach to any number of periods, as it is a recursive procedure with the same logic and arbitrage argument applied at each step. The generalised valuation formula is then
+\begin{equation}
+	C = \Bigg[ \sum_{i=0}^{n} \bigg(  \frac{n!}{i!(n-i)!}\bigg)p^i (1-p)^{n-i} max(u^id^{n-i}S(0) - K, 0) \Bigg]e^{-rn}.
+\end{equation}
+This formula makes intuitive sense if you consider the coefficient $\sum_{i=0}^{n}\frac{n!}{i!(n-i)!}$ at the start of the formula. This is the same as $\binom{n}{i}$ and can be viewed as the binomial coefficient. It means that movements that deviate less from the stock price $S(0)$ are given more weight, as they are "more likely" to occur given the set-up of the model.
+
+To clean up this formula, we can focus on all of the outcomes of the binomial process that actually result in $S-K > 0$. In every binomial model, the prices at the end of the final period will be distributed in order from highest to lowest, starting at $u^nS(0)$ and going down to $d^nS(0)$. Therefore, there will be a certain number $a$ where for every $i < a$, we have $u^id^{n-i}S(0)- K \leq 0$, and so $max(u^id^{n-i}S(0)- K, 0) = 0$. At the same time, for every $i \geq a$, $max(u^id^{n-i}S(0)- K, 0) = u^id^{n-i}S(0)- K.$ Disregarding all the outcomes for $i < a$, because they will have a value of $0$, Equation (8) can be written as
+\begin{equation}
+	C = \Bigg[ \sum_{i=a}^{n} \bigg(  \frac{n!}{i!(n-i)!}\bigg)p^i (1-p)^{n-i} (u^id^{n-i}S(0) - K) \Bigg]e^{-rn}
+\end{equation}
+
+This equation can be re-arranged further, with some additional replacements, and eventually one would arrive at the following simplification
+\begin{equation*}
+\begin{aligned}
+	C & = S(0)\Bigg[ \sum_{i=a}^{n} \bigg(  \frac{n!}{i!(n-i)!}\bigg)p^{\star i} (1-p^{\star n-i} \bigg(\frac{u^id^{n-i}}{e^{rn}}\bigg)\Bigg] \\
+	&- Ke^{-rn}\Bigg[ \sum_{i=a}^{n} \bigg(  \frac{n!}{i!(n-i)!}\bigg)p^i (1-p)^{n-i} \Bigg], 
+\end{aligned}
+\end{equation*}
+where $p^{\star} = (\frac{u}{r})p$. To understand why this substitution makes sense, it is enough to see that 
+
+\begin{equation*}
+	p^i (1-p)^{n-i} \bigg(\frac{u^i d^{n-i}}{e^{rn}}\bigg) = \bigg[ \frac{u}{r} p\bigg]^{i} \bigg[ \frac{d}{r}(1-p)\bigg]^{n-i} = p^{\star i} (1-p^{\star})^{n-i}.
+\end{equation*}
+Replacing
+\begin{equation*}
+	 \sum_{i=a}^{n} \bigg(  \frac{n!}{i!(n-i)!}\bigg)p^{\star i} (1-p^{\star})^{n-i} \bigg(\frac{u^id^{n-i}}{e^{rn}}\bigg)
+\end{equation*}
+and
+\begin{equation*}
+	 \sum_{i=a}^{n} \bigg(  \frac{n!}{i!(n-i)!}\bigg)p^i (1-p)^{n-i} 
+\end{equation*}
+with
+\begin{equation*}
+	\phi[a;n,p^{\star}]
+\end{equation*}
+and 
+\begin{equation*}
+	\phi[a;n,p]
+\end{equation*}
+respectively, where $\phi[a;n,p]$ is the binomial distribution function, we end up at the Cox-Rubenstein Formula for Call Option Pricing \cite{CRR}.
+\begin{equation}
+	C = S\phi[a;n,p^{\star}] - Ke^{-rn}\phi[a;n,p]
+\end{equation}
+
+
+In 3.2 it was shown that the price of an American and European call was equal, provided they do not pay dividends and have the same strike price $K$ and expiry date $T$. Therefore, Equation (10) can be used both for American and European options.
+
+\subsection{Pricing put options}
+Put options can be priced using the exact same process and arbitrage arguments as a call option. Although the payoff function at the end is different from that of a call option, the binomial formulation can still be applied. Using the definition for the payoff on a put option given in Equation (2), the one step model for the value of a put option can be viewed as 
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[sloped]
+
+   \node (a) at ( 0,0) [bag] {$P$};
+   \node (b) at ( 4,-1.5) [end, label=right:
+                    \textit{$P_d = max(K-dS(0),0)$}]{};
+   \node (c) at ( 4,1.5) [end, label=right:
+                    \textit{$P_u = max(K-uS(0),0)$}]{};
+   %\node (d) at ( 8,-3) [bag] {D};
+   %\node (e) at ( 8,0) [bag] {E};
+   %\node (f) at ( 8,3) [bag] {F};
+   \draw [->] (a) to node [below] {$(1-q)$} (b);
+   \draw [->] (a) to node [above] {$q$} (c);
+   %\draw [->] (c) to node [below] {$P^2$} (f);
+   %\draw [->] (c) to node [above] {$(1-p)p$} (e);
+   %\draw [->] (b) to node [below] {$(1-p)p$} (e);
+   %\draw [->] (b) to node [above] {$(1-p)^2$} (d);
+\end{tikzpicture}
+\end{figure}
+
+
+Just like in section 4.2 we can set up a portfolio with $x$ stocks and $y$ invested in a risk-free asset which will have the same end of period values as the put. Using the same series of steps as done in section 4.2, it can be shown that
+\begin{equation}
+	P = [pP_u + (1-p)P_d]e^{-r}
+\end{equation}
+is the value of the option at the start of the period (with $p = \frac{e^r-d}{u-d}$ as before) \cite{CRR}. However, this is only if $P>K-S$, and $P=K-S$ otherwise. This is important when pricing American put options, because of the possibility of early exercise. Therefore we cannot express the price of the American put option in a simple form, the same way we can for the European option.
+
+The following example will illustrate in detail how the possibility of early exercise will affect the price of an American put option. Consider a put option on a stock with a current price of $S(0) = 30$, with expiry date $T = 3$ and where $u = 1.1, d = 0.9, $ and $r = 0.01$. The risk neutral probability $p$ of a price going up would be $\frac{e^0.01 - 0.9}{1.1-0.9} = 0.5503$. The price evolution of the asset in the binomial tree model would look like this, with the payoff, $K-S$, given at the end.
+
+
+%% There is almost certainly a better way to do this.
+\begin{figure}[H]
+\centering
+\usetikzlibrary{matrix}
+\begin{tikzpicture}
+  \matrix (tree) [matrix of nodes,column sep=1.7cm, row sep=0.5cm]
+          {
+            &      &        &         & K = 33\\ 
+            &      &        & 39.93   & Payoff = {\em 0} \\
+            &      & 36.3&          \\
+            & 33 &        & 34.49   & Payoff = 0\\
+         30 &      & 31.35 &        \\
+            & 28.5 &        & 29.79    & Payoff = 3.21 \\
+            &      & 27.08  &         \\
+            &      &        &25.73    & Payoff =  7.27\\
+          t=  0  &  1    &   2     &   3      \\
+          };
+          \draw[->] (tree-5-1)--(tree-4-2);
+          \draw[->] (tree-4-2)--(tree-3-3);
+          \draw[->] (tree-3-3)--(tree-2-4);
+          \draw[->] (tree-3-3)--(tree-4-4);
+          \draw[->] (tree-4-2)--(tree-5-3);
+          \draw[->] (tree-5-3)--(tree-4-4);
+          \draw[->] (tree-5-1)--(tree-6-2);
+          \draw[->] (tree-6-2)--(tree-5-3);
+          \draw[->] (tree-5-3)--(tree-6-4);
+          \draw[->] (tree-6-2)--(tree-7-3);
+          \draw[->] (tree-7-3)--(tree-6-4);
+          \draw[->] (tree-7-3)--(tree-8-4);
+
+
+\end{tikzpicture}
+\end{figure}
+Using the risk neutral probability $p$ and discounting the expectation, we can calculate that at time $t = 2$, the value of the put call would be $0$ if the price at that time is $36.3$, $1.43$ if the price at that time is $31.35$, and $4.99$ if the price at that time is $27.08$. These are the expected values of the put call if the investor waits and {\em does not} exercise the option until time $T=3$. If he exercises the option at $t = 2$, the value of the put is then either $0, 1.65$ or $5.92$, if you directly calculate $K - S$ at that time. So in the American option setting, the rational investor would not wait until the expiry date to exercise the option.
+
+Notably, if the price of the stock dropped to $28.5$ after the first time-step, the investor would exercise it then for a payoff of 4.5, as the risk neutral expectation of the price would only be $(0.5503*1.65 + 0.4497*5.92)e^{-0.01} = 3.57$. Had the stock gone up in price to $33$, its value at that time would be $(0.4497*1.65)e^{-.01} = 0.7346$. In this scenario, the investor would not have exercised the option and waited to see how it moves. Going back to time $0$, the price of the option at the time of writing would be $(0.5503*0.7346 + 0.4497*4.5)e^{-0.01} = 2.40$
+If a European option was written with the exact same parameters, its value would be $1.68$. This explains why the possibility for earlier exercise makes American put options inherently more valuable than European put options, and why there isn't a fixed simple formula that one can employ to calculate its price.
+
+\subsection{Time step refinement}
+In all the previous sections so far, it would have been understandable to automatically associate each time-step taken with a particular length of time, such as a day, or a week. If the time-steps were really representing such lengths of time, you would be right to say that the model is a complete oversimplification. Firstly, because a day from now a stock may have more than just two possible values. Secondly, the market is open for trading more than once a day, and trading takes place almost continuously.
+
+However, while the Binomial Tree Method is built upon a very simple 1-Step model, it possesses the flexibility to meet these concerns. Each time-step can be taken to represent any unit of time, be it an hour or even a minute. Then, trading can take much more frequently and the stock can take on a multitude of values by the end of the n-Step period.
+
+With this in mind, we have to be careful in choosing the parameters when modelling the stock price movements. Suppose that $T$ is the fixed length of calendar time to expiration, and we choose to construct a model that has $n$ periods until expiration, each of length $\delta t$. Then, clearly, $\delta t = \frac{T}{n} $. The more frequently that trading occurs, the greater $n$ is, and so the smaller $\delta t$ becomes. We must then adjust the variables $r, u,$ and $d$ so that we obtain empirically realistic results.
+
+Previously, we took it for granted that each time-step would have an associated risk-free rate of interest $r$, which was compounded continuously. Now, we need to differentiate between the interest rate over the calendar time, and the rate that will be effective over each time-step. We will continue to let $r$ denote the interest rate over the time period $T$, as defined in Section 2, and let $\hat{r}$ denote the rate over a single time-step. Due to our assumption about the interest rate being compounded continuously, it is clear that $e^{rT} = (e^{\hat{r}})^n$, and so $\hat{r} = rT/n$ or $\hat{r} = r\delta t$. By construction, the interest rate $\hat{r}$ is dependent on $n$ so that the total return over elapsed time $T$ is independent of $n$.
+
+\subsection{Comparison to continuous random walk}
+In all of the examples so far, the choices of parameters $u, d$, and by construction $p$, have been completely arbitrary. There are a number of different ways one can derive these parameters, and here we will focus on the way proposed by Wilmott {\em et al.}, (1995). In his book, The Mathematics of Financial Derivatives, he shows it useful to derive the parameters in a way that arises from a discrete random walk model of the underlying security. 
+
+It has been shown that binomial models can be seen as particular cases of explicit finite-difference methods. This, paired with the assumption of risk neutrality, means we can rely on Black-Scholes analysis to formulate the models \cite{MFD}. Therefore, we can choose values for $u, d$ and $p$ such that the discrete random walk represented by the binomial tree method and the continuous random walk have the same expectation and variance.
+
+
+
+Suppose that the value of the asset is $S(m)$ at the time-step $m\delta t$. We equate the expected value and variance of $S(m+1)$ for the binomial tree model, and the continuous risk-neutral random walk. In a risk-neutral world, the price of a stock can be given by the stochastic differential equation
+
+\begin{equation}
+	\frac{dS}{S} = \sigma dX + rdt.
+\end{equation}
+In this equation, $\frac{dS}{S}$ is the measure of the return on the asset. It is broken down into two main components. Firstly, $rdt$ is the predictable, deterministic return on the money invested in a risk-free asset, at rate $r$. The second term, $\sigma dX$ models the random change in the asset price in response to unpredictable movements in the market. It is represented by a random sample drawn from a normal distribution, $dX$, multiplied by the volatility, $\sigma$, which measures the standard deviation of the returns.
+
+
+The term $dX$ is important as it contains the randomness in the movement of the stock price, which is definitely something that needs to be taken into account. Here it is known as the Wiener process, and it has the following properties \cite{MFD}
+\begin{itemize}
+	\item $dX$ is a random variable, drawn from the normal distribution;
+	\item the mean of $dX$ is zero;
+	\item the variance of $dX$ is $dt$.
+\end{itemize} 
+These features of $dX$ are important as they allow to compute the probability density function of $S$. Through some manipulations and stochastic some calculus, using Ito's Lemma it can be shown \cite{MFD} that the probability density function of $S$ is
+
+
+\begin{equation}
+	\frac{1}{\sigma S \sqrt{2\pi t}}e^{-(log(S/S_0) - (\mu- \frac{1}{2}\sigma^2)t)/2\sigma^2t}
+\end{equation}
+
+Using this we can calculate the expected value of $S(m+1)$ given that the price of the stock at time $m\delta t$ is $S(m)$;
+
+\begin{equation*}
+	\mathbb{E}_c[S(m+1)|S(m)] = \int_0^\infty S'p\bigg( S(m), m\delta t; S', (m+1)\delta t\bigg)dS' = e^{r\delta t}S(m),
+\end{equation*}
+where $p( S, t; S', t')$ is the probability density function for the risk-neutral random walk defined in Equation (13).
+
+The expected value of $S(m+1)$ given $S(m)$ under the binomial tree model is given by
+\begin{equation*}
+	\mathbb{E}_b[S(m+1)|S(m)] = (pu + (1-p)d)S(m).
+\end{equation*}
+Putting the last two results together gives 
+\begin{equation}
+	pu + (1-p)d = e^{r\delta t},
+\end{equation}
+which makes sense, as rearranging this equation to find $p$ we see that $p = \frac{e^{r\delta t} - d}{u-d}$. As before, this can be seen as the risk-neutral probability of the stock going up in value to $uS(m)$, except over a shorter time step, so we go from $r$ to $\hat{r}$ = $r\delta t$.
+
+The variance of the stock price at $S(m+1)$, given $S(m)$, $\mathbb{V}[S(m+1)|S(m)]$ is given by
+\begin{equation*}
+ 	\mathbb{E}[S(m+1)^2|S(m)]-\mathbb{E}[S(m+1)|S(m)]^2.
+ \end{equation*}
+It can be shown that under the continuous random walk, 
+\begin{equation*}
+	\mathbb{E}_c[S(m+1)^2|S(m)] = \int_0^\infty (S')^2p\bigg( S(m), m\delta t; S', (m+1)\delta t\bigg)dS' = e^{(2r+\sigma^2)\delta t}(S(m))^2,
+\end{equation*}
+and so the corresponding variance is
+\begin{equation*}
+	\mathbb{V}_c[S(m+1)|S(m)] = e^{2r\delta t}(e^{\sigma^2\delta t}-1)(S(m))^2.
+\end{equation*}
+For the binomial method, we have 
+\begin{equation}
+	\mathbb{E}_b[S(m+1)^2|S(m)] = (pu^2 + (1-p)d^2)(S(m))^2
+\end{equation}
+and so, using the result in Equation (14) the corresponding variance is 
+\begin{equation}
+	\mathbb{V}_b[S(m+1)|S(m)] =\big(pu^2 + (1-p)d^2 - e^{2r\delta t} \big)(S(m))^2
+\end{equation}
+
+Equations (15) and (16) are two equations with three unknowns, so to solve them we require an additional constraint. The two popular choices are either setting $u = \frac{1}{d} $ or $p = \frac{1}{2}$.
+
+If we choose $u = \frac{1}{d}$ as our constraint, Wilmott {\em et al.} show that solving Equations (15) and (16) give us the following choices for $u, d$ and $p$
+
+\begin{equation}
+	d = A - \sqrt{A^2 - 1}, \;	u = A + \sqrt{A^2 - 1}, \; p = \frac{e^{r\delta t} - d}{u-d},
+\end{equation}
+
+where
+\begin{equation*}
+	A = \frac{1}{2}\bigg( e^{-r\delta t} + e^{(r + \sigma^2)\delta t}\bigg).
+\end{equation*}
+
+This choice gives rise to a tree that is symmetric about the initial price, with the initial price $S(0)$ being reoccurring every second time step. This is because after an upward then an downward movement, or an downward then an upward movement, the price will become $udS(0) = duS(0) = d\frac{1}{d}S(0) = S(0)$.
+
+If we choose the constraint $p = \frac{1}{2}$, solving (14) and (15) for $u$ and $d$ gives us the following
+\begin{equation}
+	\begin{aligned}
+	d & = e^{r\delta t}\big(1 -\sqrt{e^{\sigma^2\delta t}-1} \big),\\
+	u & = e^{r\delta t}\big(1 +\sqrt{e^{\sigma^2\delta t}-1} \big),\\
+	p &= \frac{1}{2}.
+	\end{aligned}
+\end{equation}
+It is relevant to point out that for either choice of constraint, it is preferred that the time-steps taken are not too large. In the former case, where $u = \frac{1}{d} $, if too large a time step is taken, $p$ or $1-p$ may become negative, in which case the binomial method will fail. On the other hand, if we choose $p = \frac{1}{2} $ and too large a time step is taken, then $d$ will become negative, and again the method will not work. So in terms of parameter choice, the smaller the time step - the better. We will later see that smaller time steps also lead to more accurate results when calculating the true price of the option.
+
+It is notable that in these equations we also have a new $\sigma$ parameter, which we didn't have before. As mentioned above, this is the standard deviation of the returns, also known as the volatility. The use of volatility is somewhat limiting, as the volatility of an asset will rarely remain constant over the life of the option. There are different ways to estimate the volatility of an asset, the popular choices being using implied volatility, historical volatility, and looking at volatility as a function of time. Wilmott {\em et al.} discusses these in length, but we will be assuming $\sigma$ to be a constant for the purposes required here.
+
+In 4.2 we discussed how the binomial tree method works regardless of both an investors attitude towards risk, and their view of which way the stock price is likely to move. However, the standard deviation of the returns is something we should include in the model. If the underlying security for the option is the price of gold, we would expect the standard deviation to be low, as opposed to the standard deviation of the stock price of a new start up. This difference in variation of prices should be included in the modelling of the asset price. Cox, Ross, and Rubenstein (1979) \cite{CRR} included this by setting the variance of the continuously compounded rate of return of the assumed price movement equal to with that of the actual stock price, which led to a slightly different choices for $u$, $d$ and $p$. D. Higham (1995) \cite{FOV} had a different approach again, which led to different parameters \footnote{In his book, Higham chooses $p$ to be equal to $\frac{1}{2}$, and his values for $u$ and $d$ are $e^{\sigma\sqrt{\delta t}+(r-\frac{1}{2}\sigma^2)\delta t}$ and $e^{-\sigma\sqrt{\delta t}+(r-\frac{1}{2}\sigma^2)\delta t}$, respectively. It can be shown the values in (17) are very close to this when $\delta t$ is very small.}, but all of the above are based on the same principle of equating the expectation and standard deviation of returns of the binomial model with the expectation and standard deviation of the actual returns.
+
+The use of volatility is somewhat limiting, as the volatility of an asset will rarely remain constant over the life of the option.
+
+
+\section{Adjusting for dividends}
+So far we have looked at options on underlying assets that do not pay any dividends. We should, however, bring them into consideration as options are often written where the underlying asset pays a dividend. Most stable companies offer dividends to shareholders, and a dividend can be seen as a shareholder's share of the company profits. In the US, for example, exchange-traded stock options generally have less than 8 months to maturity and the dividends payable during the life of the option can usually be predicted with reasonable accuracy \cite{OFD}.
+
+One can easily accommodate a constant dividend yield $D_o$ paid on the underlying asset. The effective risk-free growth rate becomes $r-D_0$ rather than $r$, and so the SDE describing the stock price becomes
+\begin{equation*}
+	\frac{dS}{S} = (r-D_o)dt + \sigma dX.
+\end{equation*}
+Therefore we can replace $r$ by $r-D_0$ in the tree construction phase, as proposed by Wilmott \cite{MFD}. For the case $u=1/d$ we get
+\begin{equation}
+	d = A - \sqrt{A^2 - 1}, \;	u = A + \sqrt{A^2 - 1}, \; p = \frac{e^{(r-D_0)\delta t} - d}{u-d},
+\end{equation}
+where
+\begin{equation*}
+	A = \frac{1}{2}\bigg( e^{-(r-D_0)\delta t} + e^{(r -D_0+ \sigma^2)\delta t}\bigg).
+\end{equation*}
+
+Similarly, if $p = 1/2$, parameters described in (17) become 
+
+\begin{equation}
+	\begin{aligned}
+	d & = e^{(r-D_0)\delta t}\big(1 -\sqrt{e^{\sigma^2\delta t}-1} \big),\\
+	u & = e^{(r-D_0)\delta t}\big(1 +\sqrt{e^{\sigma^2\delta t}-1} \big),\\
+	p &= \frac{1}{2}.
+	\end{aligned}
+\end{equation}
+
+
+
+For a discrete dividend payment, we will consider how the ex-dividend date affects payment. If you purchase a stock on its ex-dividend date or after, you will not receive the next dividend payment, as you effectively did not invest in it on time. This is important, as when dividends are expected, we can no longer assert that an American call option will not be exercised early. The payment of a dividend effectively causes the stock price to jump down, making the option less attractive. So since the payment of a dividend changes the price of a stock, it may be optimal to exercise an American call immediately before an ex-dividend date. 
+
+This is important for us as it means that it means we should consider the dividends carefully when pricing American options. In 3.2 it was shown that an American call option should never be exercised early in the absence of dividends. To extend this argument in the case of dividend paying stock, Hull (2000) shows, using arbitrage arguments, that it can only be optimal to exercise at a time immediately before the stock goes ex-dividend. There exists a formula suggested by Roll \cite{ROLL}, Geske \cite{GESK}, and Whaley \cite{SKD}, for valuing American calls when there is only one ex-dividend date. This involves the cumulative bivariate normal distribution function and is more involved than the standard Black-Scholes. However, it still lacks the transparency and ease of use that the binomial tree model possesses.
+
+
+
+
+
+
+
+\section{Advantages and Limitations}
+The binomial tree method for the valuation of options is regarded as one of the most important concepts in modern financial theory. It is often compared to the Black-Scholes model in terms of its advantages and disadvantages, as the Black-Scholes is the other extremely popular approach to pricing options. Some of the features of the binomial tree model that make it appealing are the multiple period view, the transparency of the model, and the simplicity behind its mathematical construction.
+
+In regards to the pricing of American options, the multiple period view of the binomial tree method stands out as its key advantage. Using this model, the user can visualise the change in underlying asset price from period to period and as such decide on the best decision to make in different points in time. As illustrated in the last section, this allows us to take into account the early exercise possibility to maximise the profit, and hence increases the value of the option. In comparison, the Black-Scholes model cannot account for this. It most commonly used as a calculation with given inputs and outputs, and lacks the flexibility granted by the multi period characteristic of the binomial tree method.
+
+Transparency is another feature of the binomial tree method that is extremely useful when pricing an option. For example, the Black-Scholes model has five inputs: 
+\begin{itemize}
+\item Risk-free rate,
+\item Exercise price,
+\item Current price of the asset,
+\item Expiry time/time to maturity,
+\item Implied volatility.
+\end{itemize}
+When the Black-Scholes model is used, it is simply calculating the price based on the 5 inputs above. The impacts of these factors hard to understand with no intuitive visualisation of the process. With the binomial tree method, one can see how the price changes from time step to time step. Although it may be tedious, it is also possible to alter the inputs and parameters between time steps based on how you think the market may change (i.e. change in interest rate). The Black-Scholes model does not allow for this type of alteration.
+
+The original Black-Scholes model also does not allow to account for discrete dividends being paid out. There are, however, different variations of the model that do alter the formula to adjust for this, such as the  Roll-Geske-Whaley method to price American options mentioned in the previous section.
+
+The most obvious limitation of the binomial tree model is the computational intensity of the process. Black-Scholes based models require a few computations at most, where for the binomial model, there are many calculations done for each time step, both going forward in time, and backward in time when pricing the model. Higham (2004) also showed that the smaller the step size, the greater the accuracy, so one will always be trading off accuracy for computational efficiency, and vice versa. At present time, however, this isn't too much of a concern. With the processing capabilities of modern processors, such calculations do not take long to compute, even for very large values of $M$.
+
+Finite difference methods are another widely used model for pricing options. They have the same level of complexity as those solved by tree approaches \cite{OFD}, and are only applied when the other approaches are inappropriate. Examples of this are when interest rates are changing or when there is a time linked dividend being paid. When standard assumptions are applied, the explicit technique encompasses the binomial and trinomial tree methods \cite{123}. It has also been shown that under a certain choice of parameters, the binomial tree model becomes a special case of the explicit finite difference method \cite{RUB}.
+
+
+
+\section{Calculation of Prices}
+When calculating the prices of options, we will follow the methodology outlined by Higham in {\em An Introduction to Financial Option Valuation} \cite{FOV}. This approach follows the same basic principle as the Cox, Ross and Rubenstein, but is presented and explained through \MATLAB. For the purposes of this project, the code has been adapted for Python. 
+
+The basic idea, again, is that we calculate the price of the option at time $t=0$ by calculating the payoff at expiry time $t=T$, and recursively working backwards. The value of the stock at each time $t = i$ can take on $i$ different values, so we will denote the stock price $S$ at time $i$ and position $n$ by \newline $S^i_n= d^{i-n}u^nS^0_0$, where $S^0_0 = S(0)$ from our original formulation. Then, the value of an American option t time $i$ and position $n$, both put and call, is given by
+
+\begin{equation}
+\begin{aligned}
+	&V^M_n = \phi(S^M_n), \\
+	&V^i_n = max(\phi(S^i_n), e^{-r\delta t}[pV^{i+1}_{n+1} + (1-p)V^{i+1}_{n}]), \\
+\end{aligned}
+\end{equation}
+where $\phi$ is the payoff function dependent on the type of option, $0 \leq n \leq i$, and $0 \leq i \leq M-1$. Here, at each time step, we consider the maximum between exercising the option at time $i$ for $\phi(S^i_n)$, and the discounted expected payoff of the option at time $i+1$ under the risk neutral probability. This is the same formulation as given in equations (6) and (11), except generalised. Here, we also consider the immediate payoff function, $\phi$, as we are concerned with American options that grant the holder the possibility of early exercise.
+
+We will calculate the value of the option at each time step under the two different constraints explored in 4.6, where either $u = 1/d$ or $p=1/2$.The two different parameter choices we will be using have are described in (16) and (17). As such, the inputs our calculations require are the following
+\begin{itemize}
+	\item $S(0)$, the initial stock price at time $t = 0$,
+	\item $K$, the strike price,
+	\item $T$, the expiry date,
+	\item $r$, the risk free interest rate,
+	\item $\sigma$, the volatility of the stock,
+	\item $M$, the number of time steps desired,
+	\item $D$, the continuous dividend rate.
+\end{itemize} 
+
+Much literature has been devoted to establishing that the error in various methods tends to zero as $M \rightarrow \infty$ \cite{FOV}, and very little attention was initially paid to the rate of convergence. Leisen and Reimer (1996) \cite{EIC}, developed a general convergence rate theory, and Walsh (2003) \cite{ROC} provided a more detailed analysis.
+
+There are other ways of calculating option prices that one could compare this method with. Higham (2004), for example, provides graphs of the error vs. step size when comparing the pricing of European options using the Black-Scholes method and the binomial method, to show the convergence of the binomial method to the Black-Scholes method, for large values of $M$ \cite{FOV}. This, however, beyond the scope of this project. Wilmott {\em et al.} (1995) also provide tables of figures comparing the two methods, for different values of $T$ and $M$.
+
+One of the main benefits of this code, is that could easily be altered if one would wish for $u$ and $d$ to be deterministic functions of time. If an investor believes that these upward and downward movements will vary in magnitude over the lifetime of the option, this can be accounted for. Similarly, the risk free interest rate could be adjusted to be a function of time rather than a constant.
+
+
+
+
+\section{Visualisation of Binomial Tree}
+
+Using the process described above, it was possible to implement an algorithm to recursively price options, with a binomial tree being plotted and saved as a $.png$ file in the same file directory where the code is saved. A full few trees have been printed on full pages at the end of the paper for reference. 
+
+The code is broken up into four sections. Firstly each cell prices either an American call or an American put. Secondly, for each of these we either have $p = 1/2$ ({\em AmericanCall1, AmericanPut1}) or $u = 1/d$ ({\em AmericanCall2, AmericanPut2}) . The general concept is to show three separate values at each node in the binomial tree;
+\begin{itemize}
+	\item The value of the stock at that time and position,
+	\item The instantaneous profit of exercising the option at that time and position,
+	\item The expected value of the option if you do not exercise and wait until the next time step.
+\end{itemize}
+
+Using this, potential investors can view how the value of the option will change based on how the underlying price changes. They can also see how changes in the inputs and parameters affect the price of the option. Figure 1 on page 29 shows the evolution of the price of an American put with $S(0) = 100, K = 98, T = 1, r = 0.06, D = 0.03,  \sigma = 0.1$, and $p=1/2$. Figure 2 on page 30 shows the same setup, except for an American call.
+
+This code is similar to what can be found in the DerivaGem software which is mentioned and discussed in Hull (2000). The implementation presented here is a lot more flexible, however, as it is implemented in Python as opposed to using Macros in an Excel spreadsheet. It is completely transparent and adjustable, and can be altered to compare to different models, or to price other instruments. The reader is encouraged to take a look at the code and try it out for themselves. There are countless different possibilities for what stocks you can price using this method, and countless ways you can adjust and tweak the parameters to obtain different results.
+
+
+
+
+\begin{figure}[H]
+  \includegraphics[width=\linewidth]{AmericanPut1.png}
+  \caption{American Put 1, $p = 1/2$.}
+  \label{fig:boat1}
+\end{figure}
+
+Here we can see the evolution of an American put. Interestingly, it can be noted that once the price of the asset dips below approximately 90, that it will always be optimal to exercise early, whereas in the earlier stages of the process it was always more advantageous to hold onto the asset. If the strike price $K$ was higher, it would be more profitable to exercise early more often.
+\newpage
+\begin{figure}[H]
+  \includegraphics[width=\linewidth]{AmericanCall1.png}
+  \caption{American Call 1, $p = 1/2$.}
+  \label{fig:boat1}
+\end{figure}
+
+Here we can see for the American call, even though there is a dividend payment, it is never optimal to exercise the option early. By changing the initial parameters a bit we can see that in different situations it would sometimes be profitable to exercise early. If the dividend payment $D$ was greater, for example, there would be times before the expiry date when immediate exercise is more profitable than holding on to the option.
+\newpage
+
+\section{Conclusion}
+
+It has been shown here that the pricing of options can be broken solely into a set of arbitrage considerations, provided that the stock price movements conform to a discrete binomial process. Importantly, the probability of an upward or downward movement do not enter the valuation formula. Therefore, we obtain the same result regardless of what $q$ depends on, be it on current or past stock prices, or on other random variables. One could also account for certain imperfections in the binomial tree model, such as differential borrowing and lending rates, and margin requirements \cite{CRR}. these can be shown to produce upper and lower bounds on options prices, outside of which riskless profitable arbitrage would be possible.
+
+With this model in mind, we showed how it can be used to price American options. At first concerned with American call options, we showed how the value of an American call is equal to that of a European call, when they have the same underlying asset, expiry date and strike price, given that the risk free rate is the same. We then explained how when valuing American put options this is not the case, and that since early exercise may be optimal, the price of an American put is greater or equal to that of a European put.
+
+We have also shown that the comparison of the binomial tree model to the continuous random walk model, discussed by Willmott {\em et al.} \cite{MFD}, is extremely useful when deriving the parameters required to build the binomial tree model. Using different constraints, full sets of values can be derived that, again, do not rely on the actual probability $q$ of the stock price going up or down over one time step.
+
+The advantages and limitations of the model were also discussed, particularly the multi-period view and the transparency of the model. These advantages are what allowed us to then provide a visualisation of the model, so that it could be seen directly how the price of an option is affected by the evolution of the underlying asset price. This is done by providing code that calculates the stock prices at each time step, as well as the accompanying option values at that time step. A few toy examples of such trees are included here, with code provided explaining the process.
+
+
+
+
+
+
+\subsection*{Implementation} 
+
+\noindent All implementations were written in Python and are publicly available on \href{https://github.com/LevUdaltsov/AmericanOptionPricing.git}{GitHub}.
+
+\subsection*{Acknowledgement}
+I would like to thank my supervisor, Dr. Claus Köstler, for giving me guidance and direction over the course of the project. \\
+
+
+\begin{thebibliography}{99}
+
+\bibitem{MFF} M.~Capinski and T.~Zastawniak {\em Mathematics for Finance, An Introduction to Financial Engineering}, Springer, 2011.
+\bibitem{CRR} J.C.~Cox, S.A.~Ross and M.~Rubenstein {\em Option Pricing: A Simplified Approach}, Journal of Financial Economics 7, 1979.
+\bibitem{MFD} P.~Wilmott, S.~Howson, J.~Dewynne, {\em The Mathematics of Financial Derivatives, A Student Introduction}, Cambridge University Press, 1995.
+\bibitem{FOV} D. J.~Higham, {\em An Introduction to Financial Option Valuation}, Cambridge University Press, 2004.
+\bibitem{EIC} D.~Leisen and M.~Reimer, {\em Binomial models for option valuation, examining and improving convergence}, Applied Mathematical Finance, {\textbf 3}:319-346, 1996.
+\bibitem{OFD} J.~Hull, {\em Options, futures, and other derivatives}, 4th edn. Englewood Cliffs, Prentice Hall India, 2000.
+\bibitem{ROC} J. B.~Walsh, {\em The rate of convergence of the binomial tree scheme}, Finance and Stochastics, {\textbf 7}:337, 2003.
+\bibitem{ROLL} R.~Roll, {\em An analytic valuation formula for unprotected American call
+options on stocks with known dividends,} Journal of Financial Economics, {\textbf 5}:251-258, 1977.
+\bibitem{GESK} R.~Geske {\em A note on an analytical valuation formula for unprotected
+American options on stocks with known dividends}, Journal of Financial Economics, {\textbf 7}:375-380, 1979.
+\bibitem{SKD} R. E.~Whaley, {\em On the valuation of American call options on stocks with known dividends}, Journal of Financial Economics, {\textbf 9}:207-211, 1981.
+\bibitem{123} E.~Shwartz, M.~Brennan, {\em Finite difference methods and jump processes arising in the pricing of contingent claims: A synthesis}, Journal of Financial and Quantitative Analysis {\textbf 13} 461-474, 1978.
+\bibitem{RUB} M.~Rubenstein, {\em On the relation between binomial and trinomial option pricing models}, Journal of Derivatives, {\textbf 8} 47-50, 2007.
+\bibitem{WSI} W. F.~Sharpe, {\em Investments}, Prentice Hall, 1978.
+
+
+\end{thebibliography}
+
+\end{document}hhhhhh
